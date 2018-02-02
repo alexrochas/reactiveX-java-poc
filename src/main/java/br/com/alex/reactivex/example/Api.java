@@ -2,7 +2,7 @@ package br.com.alex.reactivex.example;
 
 import io.reactivex.Observable;
 import io.reactivex.subjects.ReplaySubject;
-import java.util.List;
+import jersey.repackaged.com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,12 +23,14 @@ public class Api {
   }
 
   @RequestMapping(value = "/events", method = RequestMethod.GET)
-  public List<Event> getEvents() {
+  public ResultStatus getEvents() {
     return Observable
             .fromArray(healthSubject.getValues())
             .defaultIfEmpty(new Event("Default message", "info"))
             .cast(Event.class)
-            .toList()
+            .reduce(new ResultStatus("green", Lists.newArrayList(), "default message"),
+                    StatusStrategy::getResultStatus)
+            .cast(ResultStatus.class)
             .blockingGet();
   }
 
